@@ -1,4 +1,4 @@
-name: Create-PR
+name: create preview manifest
 
 on:
   workflow_dispatch:
@@ -23,26 +23,35 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+        #with:
+        #  ref: ${{ github.head_ref }}
 
       - name: Set up Homebrew
         uses: Homebrew/actions/setup-homebrew@master
 
       - name: Install tools
         run: brew bundle
-      
-      - name: Create or update preview env
+
+      - name: Generate manifest
         run: ./scripts/create.sh
         env:
           APP_ID: ${{ github.event.inputs.pullNumber }}     # ${{ github.event.number }}
           IMAGE_TAG: ${{ github.event.inputs.imageTag }}    # "latest"
           REPO: ${{ github.event.inputs.repoName }}         # "atrakic/go-static-site"
           CHART_PATH: ${{ github.event.inputs.chartPath }}  # "charts/go-static-site"
+          HOST: "pr-${{ github.event.number }}.0.0.0.0.nip.io"
 
-      - name: Push changes for previre env
+      - name: Debug
+        run: |
+          git branch
+          git status -s
+          echo ${{ github.head_ref }}
+
+      - name: Push changes for preview env
         uses: github-actions-x/commit@v2.9
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          push-branch: ${{ github.event.repository.default_branch }}
+          push-branch:  ${{ github.event.repository.default_branch }}
           commit-message: 'Preview ${{ github.event.inputs.pullNumber }} created or updated'
           rebase: 'true' # pull and rebase before commit
           name: 'Creator'

@@ -1,4 +1,4 @@
-name: Delete-PR
+name: Delete
 
 on:
   workflow_dispatch:
@@ -21,17 +21,17 @@ jobs:
       - name: Install brew tools
         run: brew bundle
 
-      - name: Destroy preview env
+      - name: Destroy manifest
         run: ./scripts/delete.sh
         env:
-           APP_ID: "${{ github.event.inputs.pullNumber }}" # ${{ github.event.number }}
+           APP_ID: "${{ github.event.inputs.pullNumber }}"
 
       - name: Push changes for destruction
         uses: github-actions-x/commit@v2.9
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          push-branch: $${{ github.event.repository.default_branch }}
+          push-branch: ${{ github.event.repository.default_branch }}
           commit-message: 'Preview ${{ github.event.inputs.pullNumber }} destroyed'
-          rebase: 'true' # pull and rebase before commit
+          rebase: 'true'  # pull and rebase before commit
           name: 'Destroyer'
           email: noreply@users.noreply.github.com

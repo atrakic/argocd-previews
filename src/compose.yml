@@ -1,0 +1,7 @@
+services:
+  app:
+    build: .
+    container_name: express
+    image: local/express
+    ports:
+      - 3000:3000

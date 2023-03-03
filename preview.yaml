@@ -23,8 +23,8 @@ spec:
         image:
           tag: "{{.IMAGE_TAG}}"
         ingress:
-          host: "{{.HOSTNAME}}"
-      #version: v3
+          host: "{{.HOST}}"
+      version: v3
   destination:
     namespace: "{{.APP_ID}}"
     server: https://kubernetes.default.svc
