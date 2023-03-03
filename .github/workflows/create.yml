@@ -1,3 +1,4 @@
+# Generates ArgoCD Application manifests and stores to sink helm chart
 name: Create
 
 on:
@@ -23,7 +24,7 @@ permissions:
 
 jobs:
   create:
-    name: Create a preview environment
+    name: Create
     runs-on: ubuntu-latest
     #if: github.event.pull_request.merged == true
     steps:
