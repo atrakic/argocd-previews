@@ -5,7 +5,7 @@ APP_ID="${APP_ID:?Error: APP_ID must be set}"
 REPO="${REPO:?Error: REPO must be set}"
 IMAGE_TAG="${IMAGE_TAG:?Error: IMAGE_TAG must be set}"
 CHART_PATH="${CHART_PATH:?Error: CHART_PATH must be set}"
-HOST="${HOST:-test.127.0.0.1.nip.io}"# If variable not set or null, set it to default
+HOST="${HOST:-test.127.0.0.1.nip.io}"   # If variable not set or null, set it to default
 
 YAML=$(echo "$APP_ID" | sed -e 's#/#-#g')
 cat preview.yaml | \
