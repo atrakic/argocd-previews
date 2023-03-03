@@ -1,4 +1,4 @@
-name: create preview manifest
+name: Create
 
 on:
   workflow_dispatch:
@@ -16,10 +16,16 @@ on:
         description: ''
         required: true
 
+permissions:
+  # Give the default GITHUB_TOKEN write permission to commit and push the
+  # added or changed files to the repository.
+  contents: write
+
 jobs:
   create:
     name: Create a preview environment
     runs-on: ubuntu-latest
+    #if: github.event.pull_request.merged == true
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -32,27 +38,24 @@ jobs:
       - name: Install tools
         run: brew bundle
 
-      - name: Generate manifest
+      - name: Generate ArgoCD Application manifest file
         run: ./scripts/create.sh
         env:
-          APP_ID: ${{ github.event.inputs.pullNumber }}     # ${{ github.event.number }}
-          IMAGE_TAG: ${{ github.event.inputs.imageTag }}    # "latest"
-          REPO: ${{ github.event.inputs.repoName }}         # "atrakic/go-static-site"
-          CHART_PATH: ${{ github.event.inputs.chartPath }}  # "charts/go-static-site"
-          HOST: "pr-${{ github.event.number }}.0.0.0.0.nip.io"
+          APP_ID: ${{ github.event.inputs.pullNumber }}
+          IMAGE_TAG: ${{ github.event.inputs.imageTag }}
+          REPO: ${{ github.event.inputs.repoName }}
+          CHART_PATH: ${{ github.event.inputs.chartPath }}
+          HOST: "${{ github.event.inputs.pullNumber }}.0.0.0.0.nip.io"
 
-      - name: Debug
+      - name: GIT Commit Build Artifacts
+        # Only run on main branch push (e.g. after pull request merge).
+        #if: github.event_name == 'push'
         run: |
-          git branch
-          git status -s
-          echo ${{ github.head_ref }}
-
-      - name: Push changes for preview env
-        uses: github-actions-x/commit@v2.9
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          push-branch:  ${{ github.event.repository.default_branch }}
-          commit-message: 'Preview ${{ github.event.inputs.pullNumber }} created or updated'
-          rebase: 'true' # pull and rebase before commit
-          name: 'Creator'
-          email: noreply@users.noreply.github.com
+          git config --global user.name "create[bot]"
+          git config --global user.email "${GITHUB_ACTOR}@users.noreply.github.com"
+          git status -v
+          # Only changes in charts dir:
+          git add charts/previews
+          git diff --cached
+          git commit -m "Preview ${{ github.event.inputs.pullNumber }} created or updated"
+          git push

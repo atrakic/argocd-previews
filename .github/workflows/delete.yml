@@ -7,31 +7,32 @@ on:
         description: ''
         required: true
 
+permissions:
+  # Give the default GITHUB_TOKEN write permission to commit and push the
+  # added or changed files to the repository.
+  contents: write
+
 jobs:
   delete:
-    name: Delete preview environment
+    name: Delete
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Set up Homebrew
-        uses: Homebrew/actions/setup-homebrew@master
-
-      - name: Install brew tools
-        run: brew bundle
-
-      - name: Destroy manifest
+      - name: Delete preview environment manifest
         run: ./scripts/delete.sh
         env:
            APP_ID: "${{ github.event.inputs.pullNumber }}"
 
-      - name: Push changes for destruction
-        uses: github-actions-x/commit@v2.9
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          push-branch: ${{ github.event.repository.default_branch }}
-          commit-message: 'Preview ${{ github.event.inputs.pullNumber }} destroyed'
-          rebase: 'true'  # pull and rebase before commit
-          name: 'Destroyer'
-          email: noreply@users.noreply.github.com
+      # Commit and push all changed files.
+      - name: Git Commit Build Artifacts
+        # Only run on main branch push (e.g. after pull request merge).
+        #if: github.event_name == 'push'
+        run: |
+          git config --global user.name "delete[bot]"
+          git config --global user.email "${GITHUB_ACTOR}@users.noreply.github.com"
+          git status -v
+          git commit -a -m "Preview ${{ github.event.inputs.pullNumber }} destroyed"
+          git diff --cached
+          git push
