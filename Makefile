@@ -7,7 +7,7 @@ SERVER := 127.0.0.1:8080
 all: kind setup port_forward e2e status ## Do all
 
 kind:
-	kind create cluster --config config/kind.yaml --wait 60s || true
+	kind create cluster --config tests/kind.yaml --wait 60s || true
 	kind version
 
 setup: ## Setup kinD with ArgoCD + Nginx Ingress
@@ -27,11 +27,20 @@ port_forward: ## Port forward
 login: ## ArgoCD Login
 	scripts/argocd/login.sh
 
+deploy: ## Deploy ArgoCD app (Nginx)
+	kubectl apply -f project.yaml
+	helm upgrade --install previews ./charts/previews \
+	 	--set "image.repository=nginx" \
+		--set "image.tag=stable-alpine" \
+		--set "image.pullPolicy=IfNotPresent"
+	argocd app sync pr-0000
+
 e2e: ## e2e test
 	echo ":: $@ :: "
 	tests/e2e.sh
 
 clean: ## Clean
+	helm uninstall previews
 	kind delete cluster
 
 help:  ## Display this help menu

@@ -19,7 +19,7 @@ spec:
         ingress:
           enabled: true
         image:
-          tag: "85d6e80"
+          tag: "latest"
         ingress:
           host: "pr-0000.0.0.0.0.nip.io"
       version: v3
