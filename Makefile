@@ -1,6 +1,7 @@
 MAKEFLAGS += --silent
 
-SERVER := 127.0.0.1:8080
+SERVER ?= 127.0.0.1:8080
+PR ?= pr-0000
 
 .DEFAULT_GOAL := help
 
@@ -19,6 +20,8 @@ setup: ## Setup kinD with ArgoCD + Nginx Ingress
 status: ## Status
 	argocd version
 	argocd --server $(SERVER) --insecure app list
+	argocd --server $(SERVER) --insecure proj list
+	argocd --server $(SERVER) --insecure app manifests $(PR)
 
 port_forward: ## Port forward
 	scripts/argocd/port_forward.sh &
@@ -27,13 +30,10 @@ port_forward: ## Port forward
 login: ## ArgoCD Login
 	scripts/argocd/login.sh
 
-deploy: ## Deploy ArgoCD app (Nginx)
+deploy: ## Deploy ArgoCD Application previews from local helm chart
 	kubectl apply -f project.yaml
-	helm upgrade --install previews ./charts/previews \
-	 	--set "image.repository=nginx" \
-		--set "image.tag=stable-alpine" \
-		--set "image.pullPolicy=IfNotPresent"
-	argocd app sync pr-0000
+	helm upgrade --install previews ./charts/previews --set "foo.bar=True"
+	argocd app sync $(PR)
 
 e2e: ## e2e test
 	echo ":: $@ :: "
