@@ -1,0 +1,38 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  finalizers:
+  - resources-finalizer.argocd.argoproj.io
+  labels:
+    app.kubernetes.io/created-by: argocd-previews
+    name: pr-e2e
+  name: pr-e2e
+  namespace: argocd
+spec:
+  destination:
+    namespace: pr-e2e
+    server: https://kubernetes.default.svc
+  project: previews
+  source:
+    helm:
+      values: |
+        image:
+          tag: "v0.0.2"
+        ingress:
+          enabled: true
+          hosts:
+            - host: "pr-e2e.127.0.0.1.nip.io"
+              paths:
+                - path: /
+                  pathType: ImplementationSpecific
+      version: v3
+    path: charts/go-static-site
+    repoURL: https://github.com/atrakic/go-static-site.git
+    targetRevision: HEAD
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+    - CreateNamespace=true
