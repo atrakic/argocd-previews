@@ -44,7 +44,7 @@ e2e: ## E2e test (requires GITHUB_TOKEN env)
 			 APP_ID="$(DEMO_PR)" tests/create.sh
 	#git stash
 	git pull
-	tests/e2e.sh
+	HOST=$(DEMO_PR).0.0.0.0.nip.io tests/e2e.sh
 	APP_ID="$(DEMO_PR)" tests/delete.sh
 	git pull
 
