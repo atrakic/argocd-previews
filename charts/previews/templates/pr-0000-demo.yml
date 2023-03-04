@@ -26,7 +26,7 @@ spec:
             # kubernetes.io/ingress.class: nginx
             # kubernetes.io/tls-acme: "true"
           hosts:
-            - host: "pr-0000-demo.0.0.0.0.nip.io"
+            - host: "pr-0000-demo.127.0.0.1.nip.io"
               paths:
                 - path: /
                   pathType: ImplementationSpecific
