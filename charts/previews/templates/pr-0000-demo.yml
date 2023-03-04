@@ -21,8 +21,15 @@ spec:
           tag: "stable-alpine"
         ingress:
           enabled: true
+          className: ""
+          annotations: {}
+            # kubernetes.io/ingress.class: nginx
+            # kubernetes.io/tls-acme: "true"
           hosts:
-            - host: "pr-0000-demo.127.0.0.1.nip.io"
+            - host: "pr-0000-demo.0.0.0.0.nip.io"
+              paths:
+                - path: /
+                  pathType: ImplementationSpecific
       version: v3
     path: charts/demo
     repoURL: https://github.com/atrakic/argocd-previews.git
