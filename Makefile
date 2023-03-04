@@ -1,9 +1,9 @@
 MAKEFLAGS += --silent
 
-SERVER ?= 127.0.0.1:8080
-DEMO_PR ?= demo-pr-0000
-
 .DEFAULT_GOAL := help
+
+SERVER ?= 127.0.0.1:8080
+DEMO_PR ?= pr-0000-demo # Use naming convention from ./argocd/project.yaml
 
 all: kind setup port_forward deploy e2e status ## Do all
 
@@ -34,7 +34,6 @@ deploy: ## Deploy ArgoCD Application previews from local helm chart
 	kubectl apply -f argocd
 	helm upgrade --install previews ./charts/previews --set "foo.bar=True"
 	argocd app sync $(DEMO_PR)
-
 
 e2e: ## E2e test (requires GITHUB_TOKEN env)
 	echo ":: $@ :: "
