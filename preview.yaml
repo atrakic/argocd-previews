@@ -19,12 +19,12 @@ spec:
     path: "{{.CHART_PATH}}"
     helm:
       values: |
-        ingress:
-          enabled: true
         image:
           tag: "{{.IMAGE_TAG}}"
         ingress:
-          host: "{{.HOST}}"
+          enabled: true
+          hosts:
+            - host: "{{.HOST}}"
       version: v3
   destination:
     namespace: "{{.APP_ID}}"
