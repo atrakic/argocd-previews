@@ -3,8 +3,6 @@ set -euo pipefail
 
 #export HOST="${APP_ID}.$(curl -sSL ifconfig.co).nip.io"
 
-./scripts/create.sh
-
 PAYLOAD=$(cat <<-END
 {
   "ref": "$(git rev-parse --abbrev-ref HEAD)",
