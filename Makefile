@@ -42,11 +42,14 @@ e2e: ## E2e test (requires GITHUB_TOKEN env)
 			 IMAGE_TAG="stable-alpine" \
 			 CHART_PATH="charts/demo" \
 			 APP_ID="$(DEMO_PR)" tests/create.sh
-	#git stash
+	git stash
 	git pull
+	git add charts/previews
+	git diff --cached
+	git commit -m "$@: $(shell git rev-parse --short HEAD)"
+	git push
 	HOST=$(DEMO_PR).0.0.0.0.nip.io tests/e2e.sh
-	APP_ID="$(DEMO_PR)" tests/delete.sh
-	git pull
+	git stash apply
 
 clean: ## Clean
 	helm uninstall previews
