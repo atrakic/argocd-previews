@@ -21,6 +21,7 @@ spec:
       version: v3
       values: |
         image:
+          #repository: "{{.IMAGE_REPO}}"
           tag: "{{.IMAGE_TAG}}"
         ingress:
           enabled: true
