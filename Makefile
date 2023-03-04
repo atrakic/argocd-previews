@@ -3,7 +3,8 @@ MAKEFLAGS += --silent
 .DEFAULT_GOAL := help
 
 SERVER ?= 127.0.0.1:8080
-DEMO_PR ?= pr-0000-demo # Use naming convention from ./argocd/project.yaml
+# Use naming convention from ./argocd/project.yaml
+DEMO_PR ?= pr-0000-demo
 
 all: kind setup port_forward deploy e2e status ## Do all
 
@@ -41,15 +42,15 @@ e2e: ## E2e test (requires GITHUB_TOKEN env)
 		IMAGE_TAG="stable-alpine" \
 		CHART_PATH="charts/demo" \
     HOST="$(DEMO_PR).127.0.0.1.nip.io" \
-		APP_ID="$(DEMO_PR)" tests/create.sh \
-	\
-	if [ -n "$(git status --porcelain)" ]; then
-		git status --porcelain
-		git add charts/previews
-		git diff --name-only
-		git commit --allow-empty -m "$@: $(shell git rev-parse --short HEAD)"
-		git push -u origin
-		HOST=$(DEMO_PR).127.0.0.1.nip.io tests/e2e.sh
+		APP_ID="$(DEMO_PR)" tests/create.sh
+
+commit:
+	if [ -n "$(shell git status --porcelain)" ]; then \
+		git add charts/previews; \
+		git diff --name-only; \
+		git commit --allow-empty -m "e2e: $(shell git rev-parse --short HEAD)" \
+		git push -u origin; \
+		HOST="$(DEMO_PR).127.0.0.1.nip.io" tests/e2e.sh; \ 
 	fi
 
 clean: ## Clean
