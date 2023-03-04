@@ -21,14 +21,9 @@ spec:
       version: v3
       values: |
         image:
-          #repository: "{{.IMAGE_REPO}}"
           tag: "{{.IMAGE_TAG}}"
         ingress:
           enabled: true
-          className: ""
-          annotations: {}
-            # kubernetes.io/ingress.class: nginx
-            # kubernetes.io/tls-acme: "true"
           hosts:
             - host: "{{.HOST}}"
               paths:
