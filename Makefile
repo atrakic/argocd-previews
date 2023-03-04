@@ -6,7 +6,7 @@ SERVER ?= 127.0.0.1:8080
 # Use naming convention from ./argocd/project.yaml
 DEMO_PR ?= pr-0000-demo
 
-all: kind setup port_forward deploy e2e status ## Do all
+all: kind setup port_forward login deploy e2e status ## Do all
 
 kind:
 	kind create cluster --config tests/kind.yaml --wait 60s || true
@@ -33,7 +33,7 @@ login: ## ArgoCD Login
 
 deploy: ## Deploy ArgoCD Application previews from local helm chart
 	kubectl apply -f argocd
-	helm upgrade --install previews ./charts/previews --set "foo.bar=True"
+	#helm upgrade --install previews ./charts/previews --set "foo.bar=True"
 	argocd app sync $(DEMO_PR)
 
 e2e: ## E2e test (requires GITHUB_TOKEN env)
