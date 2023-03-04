@@ -46,7 +46,7 @@ jobs:
           IMAGE_TAG: ${{ github.event.inputs.imageTag }}
           REPO: ${{ github.event.inputs.repoName }}
           CHART_PATH: ${{ github.event.inputs.chartPath }}
-          HOST: "${{ github.event.inputs.pullNumber }}.0.0.0.0.nip.io"
+          HOST: "${{ github.event.inputs.pullNumber }}.127.0.0.1.nip.io"
 
       - name: GIT Commit Build Artifacts
         # Only run on main branch push (e.g. after pull request merge).
