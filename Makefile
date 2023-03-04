@@ -44,14 +44,14 @@ e2e: ## E2e test (requires GITHUB_TOKEN env)
     HOST="$(DEMO_PR).127.0.0.1.nip.io" \
 		APP_ID="$(DEMO_PR)" tests/create.sh \
 	\
-	git stash
-	git pull
-	git add charts/previews
-	git diff --cached
-	git commit -m "$@: $(shell git rev-parse --short HEAD)"
-	git push
-	HOST=$(DEMO_PR).0.0.0.0.nip.io tests/e2e.sh
-	git stash apply
+	if [ -n "$(git status --porcelain)" ]; then
+		git status --porcelain
+		git add charts/previews
+		git diff --name-only
+		git commit --allow-empty -m "$@: $(shell git rev-parse --short HEAD)"
+		git push -u origin
+		HOST=$(DEMO_PR).127.0.0.1.nip.io tests/e2e.sh
+	fi
 
 clean: ## Clean
 	helm uninstall previews
