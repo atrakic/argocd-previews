@@ -24,11 +24,15 @@ spec:
           tag: "{{.IMAGE_TAG}}"
         ingress:
           enabled: true
+          className: ""
+          annotations: {}
+            # kubernetes.io/ingress.class: nginx
+            # kubernetes.io/tls-acme: "true"
           hosts:
             - host: "{{.HOST}}"
-          paths:
-            - path: /
-              pathType: ImplementationSpecific
+              paths:
+                - path: /
+                  pathType: ImplementationSpecific
   destination:
     namespace: "{{.APP_ID}}"
     server: https://kubernetes.default.svc
