@@ -50,7 +50,7 @@ e2e: ## E2e test (requires GITHUB_TOKEN env)
 		HOST="$(DEMO_PR).127.0.0.1.nip.io" tests/e2e.sh
 
 clean: ## Clean
-	helm uninstall previews
+	#helm uninstall previews
 	kind delete cluster
 
 help:
