@@ -42,7 +42,7 @@ e2e: ## E2e test (requires GITHUB_TOKEN env)
 		IMAGE_TAG="stable-alpine" \
 		CHART_PATH="charts/demo" \
 		HOST="$(DEMO_PR).127.0.0.1.nip.io" \
-		APP_ID="$(DEMO_PR)" tests/create.sh
+		APP_ID="$(DEMO_PR)" scripts/create.sh
 		git add charts/previews
 		git diff --name-only
 		git commit --allow-empty -m "e2e: $(shell git rev-parse --short HEAD)"
