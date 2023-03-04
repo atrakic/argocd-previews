@@ -5,6 +5,7 @@ metadata:
   finalizers:
   - resources-finalizer.argocd.argoproj.io
   labels:
+    app.kubernetes.io/created-by: argocd-previews
     name: demo-pr-0000
   name: demo-pr-0000
   namespace: argocd
