@@ -18,6 +18,7 @@ spec:
     targetRevision: HEAD
     path: "{{.CHART_PATH}}"
     helm:
+      version: v3
       values: |
         image:
           tag: "{{.IMAGE_TAG}}"
@@ -25,7 +26,9 @@ spec:
           enabled: true
           hosts:
             - host: "{{.HOST}}"
-      version: v3
+          paths:
+            - path: /
+              pathType: ImplementationSpecific
   destination:
     namespace: "{{.APP_ID}}"
     server: https://kubernetes.default.svc
