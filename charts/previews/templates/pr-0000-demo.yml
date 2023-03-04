@@ -1,0 +1,38 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  finalizers:
+  - resources-finalizer.argocd.argoproj.io
+  labels:
+    app.kubernetes.io/created-by: argocd-previews
+    name: pr-0000-demo
+  name: pr-0000-demo
+  namespace: argocd
+spec:
+  destination:
+    namespace: pr-0000-demo
+    server: https://kubernetes.default.svc
+  project: previews
+  source:
+    helm:
+      values: |
+        image:
+          tag: "stable-alpine"
+        ingress:
+          enabled: true
+          hosts:
+            - host: "pr-0000-demo.127.0.0.1.nip.io"
+              paths:
+                - path: /
+                  pathType: ImplementationSpecific
+      version: v3
+    path: charts/demo
+    repoURL: https://github.com/atrakic/argocd-previews.git
+    targetRevision: HEAD
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+    - CreateNamespace=true
