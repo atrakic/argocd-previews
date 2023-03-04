@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 set -o errexit
 
-APP_ID="pr-0000"
 PAYLOAD=$(cat <<-END
 {
   "ref": "$(git rev-parse --abbrev-ref HEAD)",
@@ -13,7 +12,7 @@ PAYLOAD=$(cat <<-END
 END
 )
 
-#jq -r "$PAYLOAD"
+jq -r "$PAYLOAD"
 curl -L -X POST -d "$PAYLOAD" \
   -H "authorization: Bearer ${GITHUB_TOKEN}" \
   -H "Accept: application/vnd.github.v3+json" \

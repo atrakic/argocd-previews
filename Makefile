@@ -1,11 +1,11 @@
 MAKEFLAGS += --silent
 
 SERVER ?= 127.0.0.1:8080
-PR ?= pr-0000
+DEMO_PR ?= demo-pr-0000
 
 .DEFAULT_GOAL := help
 
-all: kind setup port_forward e2e status ## Do all
+all: kind setup port_forward deploy e2e status ## Do all
 
 kind:
 	kind create cluster --config tests/kind.yaml --wait 60s || true
@@ -21,9 +21,9 @@ status: ## Status
 	argocd version
 	argocd --server $(SERVER) --insecure app list
 	argocd --server $(SERVER) --insecure proj list
-	argocd --server $(SERVER) --insecure app manifests $(PR)
+	argocd --server $(SERVER) --insecure app manifests $(DEMO_PR)
 
-port_forward: ## Port forward
+port_forward: ## ArgoCD Port forward
 	scripts/argocd/port_forward.sh &
 	sleep 1
 
@@ -31,13 +31,22 @@ login: ## ArgoCD Login
 	scripts/argocd/login.sh
 
 deploy: ## Deploy ArgoCD Application previews from local helm chart
-	kubectl apply -f project.yaml
+	kubectl apply -f argocd
 	helm upgrade --install previews ./charts/previews --set "foo.bar=True"
-	argocd app sync $(PR)
+	argocd app sync $(DEMO_PR)
 
 e2e: ## e2e test
 	echo ":: $@ :: "
+	REPO="atrakic/argocd-previews" \
+			 HOST="$(DEMO_PR).127.0.0.1.nip.io" \
+			 IMAGE_TAG="v0.0.2" \
+			 CHART_PATH="charts/demo" \
+			 APP_ID="$(DEMO_PR)" tests/create.sh
+	#git stash
+	git pull
 	tests/e2e.sh
+	APP_ID="$(DEMO_PR)" tests/delete.sh
+	git pull
 
 clean: ## Clean
 	helm uninstall previews
