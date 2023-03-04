@@ -43,15 +43,11 @@ e2e: ## E2e test (requires GITHUB_TOKEN env)
 		CHART_PATH="charts/demo" \
 		HOST="$(DEMO_PR).127.0.0.1.nip.io" \
 		APP_ID="$(DEMO_PR)" tests/create.sh
-
-commit:
-	if [ -z "$(shell git status --porcelain)" ]; then \
-		git add charts/previews; \
-		git diff --name-only; \
-		git commit --allow-empty -m "e2e: $(shell git rev-parse --short HEAD)"; \
-		git push -u origin; \
-		HOST="$(DEMO_PR).127.0.0.1.nip.io" tests/e2e.sh; \
-	fi
+		git add charts/previews
+		git diff --name-only
+		git commit --allow-empty -m "e2e: $(shell git rev-parse --short HEAD)"
+		git push -u origin
+		HOST="$(DEMO_PR).127.0.0.1.nip.io" tests/e2e.sh
 
 clean: ## Clean
 	helm uninstall previews
