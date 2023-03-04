@@ -1,0 +1,62 @@
+# Generates ArgoCD Application manifests and stores to sink helm chart
+name: Create
+
+on:
+  workflow_dispatch:
+    inputs:
+      pullNumber:
+        description: ''
+        required: true
+      imageTag:
+        description: ''
+        required: true
+      repoName:
+        description: ''
+        required: true
+      chartPath:
+        description: ''
+        required: true
+
+permissions:
+  # Give the default GITHUB_TOKEN write permission to commit and push the
+  # added or changed files to the repository.
+  contents: write
+
+jobs:
+  create:
+    name: Create
+    runs-on: ubuntu-latest
+    #if: github.event.pull_request.merged == true
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        #with:
+        #  ref: ${{ github.head_ref }}
+
+      - name: Set up Homebrew
+        uses: Homebrew/actions/setup-homebrew@master
+
+      - name: Install tools
+        run: brew bundle
+
+      - name: Generate ArgoCD Application manifest file
+        run: ./scripts/create.sh
+        env:
+          APP_ID: ${{ github.event.inputs.pullNumber }}
+          IMAGE_TAG: ${{ github.event.inputs.imageTag }}
+          REPO: ${{ github.event.inputs.repoName }}
+          CHART_PATH: ${{ github.event.inputs.chartPath }}
+          HOST: "${{ github.event.inputs.pullNumber }}.127.0.0.1.nip.io"
+
+      - name: GIT Commit Build Artifacts
+        # Only run on main branch push (e.g. after pull request merge).
+        #if: github.event_name == 'push'
+        run: |
+          git config --global user.name "create[bot]"
+          git config --global user.email "${GITHUB_ACTOR}@users.noreply.github.com"
+          git status -v
+          # Only changes in charts dir:
+          git add charts/previews
+          git diff --cached
+          git commit -m "Preview ${{ github.event.inputs.pullNumber }} created or updated"
+          git push

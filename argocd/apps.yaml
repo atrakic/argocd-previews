@@ -8,9 +8,13 @@ metadata:
 spec:
   project: previews
   source:
-    repoURL: https://github.com/vfarcic/argocd-previews.git
-    targetRevision: HEAD
-    path: helm
+    repoURL: https://github.com/atrakic/argocd-previews.git
+    targetRevision: fix/ingress # HEAD
+    path: charts/previews
   destination:
     server: https://kubernetes.default.svc
     namespace: previews
+  syncPolicy:
+    automated:
+      selfHeal: true
+      prune: true

@@ -1,0 +1,38 @@
+name: Delete
+
+on:
+  workflow_dispatch:
+    inputs:
+      pullNumber:
+        description: ''
+        required: true
+
+permissions:
+  # Give the default GITHUB_TOKEN write permission to commit and push the
+  # added or changed files to the repository.
+  contents: write
+
+jobs:
+  delete:
+    name: Delete
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Delete preview environment manifest
+        run: ./scripts/delete.sh
+        env:
+           APP_ID: "${{ github.event.inputs.pullNumber }}"
+
+      # Commit and push all changed files.
+      - name: Git Commit Build Artifacts
+        # Only run on main branch push (e.g. after pull request merge).
+        #if: github.event_name == 'push'
+        run: |
+          git config --global user.name "delete[bot]"
+          git config --global user.email "${GITHUB_ACTOR}@users.noreply.github.com"
+          git status -v
+          git commit -a -m "Preview ${{ github.event.inputs.pullNumber }} destroyed"
+          git diff --cached
+          git push
