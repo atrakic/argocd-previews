@@ -35,13 +35,15 @@ deploy: ## Deploy ArgoCD Application previews from local helm chart
 	helm upgrade --install previews ./charts/previews --set "foo.bar=True"
 	argocd app sync $(DEMO_PR)
 
+
 e2e: ## E2e test (requires GITHUB_TOKEN env)
 	echo ":: $@ :: "
 	REPO="atrakic/argocd-previews" \
-			 HOST="$(DEMO_PR).127.0.0.1.nip.io" \
-			 IMAGE_TAG="stable-alpine" \
-			 CHART_PATH="charts/demo" \
-			 APP_ID="$(DEMO_PR)" tests/create.sh
+		IMAGE_TAG="stable-alpine" \
+		CHART_PATH="charts/demo" \
+    HOST="$(DEMO_PR).127.0.0.1.nip.io" \
+		APP_ID="$(DEMO_PR)" tests/create.sh \
+	\
 	git stash
 	git pull
 	git add charts/previews

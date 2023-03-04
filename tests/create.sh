@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -o errexit
+set -euo pipefail
 
 #export HOST="${APP_ID}.$(curl -sSL ifconfig.co).nip.io"
 
@@ -11,7 +11,7 @@ PAYLOAD=$(cat <<-END
   "inputs":
   {
     "pullNumber": "$(echo $APP_ID)",
-    "imageTag": "$(git rev-parse --short HEAD)",
+    "imageTag": "$(echo $IMAGE_TAG)",
     "repoName": "$(echo $REPO)",
     "chartPath": "$(echo $CHART_PATH)"
   }
