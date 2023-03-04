@@ -48,7 +48,7 @@ commit:
 	if [ -n "$(shell git status --porcelain)" ]; then \
 		git add charts/previews; \
 		git diff --name-only; \
-		git commit --allow-empty -m "e2e: $(shell git rev-parse --short HEAD)" \
+		git commit --allow-empty -m "e2e: $(shell git rev-parse --short HEAD)"; \
 		git push -u origin; \
 		HOST="$(DEMO_PR).127.0.0.1.nip.io" tests/e2e.sh; \ 
 	fi
