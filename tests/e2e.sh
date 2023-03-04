@@ -1,3 +1,3 @@
 #!/usr/bin/env bash
-set -o errexit
+set -euo pipefail
 curl -fisk localhost:80 -H "Host: $HOST"

@@ -41,7 +41,7 @@ e2e: ## E2e test (requires GITHUB_TOKEN env)
 	REPO="atrakic/argocd-previews" \
 		IMAGE_TAG="stable-alpine" \
 		CHART_PATH="charts/demo" \
-    HOST="$(DEMO_PR).127.0.0.1.nip.io" \
+		HOST="$(DEMO_PR).127.0.0.1.nip.io" \
 		APP_ID="$(DEMO_PR)" tests/create.sh
 
 commit:
@@ -50,7 +50,7 @@ commit:
 		git diff --name-only; \
 		git commit --allow-empty -m "e2e: $(shell git rev-parse --short HEAD)"; \
 		git push -u origin; \
-		HOST="$(DEMO_PR).127.0.0.1.nip.io" tests/e2e.sh; \ 
+		HOST="$(DEMO_PR).127.0.0.1.nip.io" tests/e2e.sh; \
 	fi
 
 clean: ## Clean
