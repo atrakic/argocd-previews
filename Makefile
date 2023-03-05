@@ -3,7 +3,8 @@ MAKEFLAGS += --silent
 .DEFAULT_GOAL := help
 
 SERVER ?= 127.0.0.1:8080
-# Use naming convention from ./argocd/project.yaml
+
+# Follows naming convention from ./argocd/project.yaml
 DEMO_PR ?= pr-0000-demo
 
 all: kind setup port_forward login deploy e2e status ## Do all
@@ -31,35 +32,43 @@ port_forward: ## ArgoCD Port forward
 login: ## ArgoCD Login
 	scripts/argocd/login.sh
 
-deploy: ## Deploy ArgoCD Application previews from local helm chart
+deploy: ## Deploy a local helm chart with ArgoCD Application previews
 	kubectl apply -f argocd
 	#helm upgrade --install previews ./charts/previews --set "foo.bar=True"
 	argocd app sync $(DEMO_PR)
 
-e2e: ## E2e test (requires GITHUB_TOKEN env)
+e2e: ## E2e local helm chart
 	echo ":: $@ :: "
 	REPO="atrakic/argocd-previews" \
 		IMAGE_TAG="stable-alpine" \
 		CHART_PATH="charts/demo" \
 		HOST="$(DEMO_PR).127.0.0.1.nip.io" \
 		APP_ID="$(DEMO_PR)" scripts/create.sh
-		# commit changes on local chart
+		# Commit only changes from local chart
 		git add charts/previews
 		git diff --name-only
 		git commit --allow-empty -m "e2e: $(shell git rev-parse --short HEAD)"
 		git push -u origin
 		HOST="$(DEMO_PR).127.0.0.1.nip.io" tests/e2e.sh
-		# Trigger pipeline with other app
-		if [ -n "$(GITHUB_TOKEN)" ]; then \
-			REPO="atrakic/go-static-site" \
-			IMAGE_TAG="v0.0.2" \
-			CHART_PATH="charts/go-static-site" \
-			HOST="pr-e2e-go-static-site.127.0.0.1.nip.io" \
-			APP_ID="pr-e2e" tests/trigger_create_pr.sh; \
-		fi
+
+e2e-remote-chart: ## E2e remote helm chart
+	echo ":: $@ :: "
+	# Example how to source remote chart via GH actions.
+	# Follows naming convention from: argocd/project.yaml
+	if [ -n "$(GITHUB_TOKEN)" ]; then \
+		REPO="atrakic/go-static-site" \
+		IMAGE_TAG="v0.0.2" \
+		CHART_PATH="charts/go-static-site" \
+		HOST="go-static-site.127.0.0.1.nip.io" \
+		APP_ID="pr-e2e" tests/trigger_create_pr.sh; \
+	fi
+
+sync: ## Sync previews
+	argocd app sync previews
+	argocd app wait previews
 
 clean: ## Clean
-	#helm uninstall previews
+	helm uninstall previews
 	kind delete cluster
 
 help:
