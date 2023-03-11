@@ -48,14 +48,19 @@ e2e: kind setup port_forward deploy ## E2e local helm chart
 	CHART_PATH="charts/demo" \
 	HOST="$(DEMO_PR).127.0.0.1.nip.io" \
 	APP_ID="$(DEMO_PR)" scripts/create.sh
-	if [[ -z "$(GITHUB_TOKEN)" ]]; then echo "Error: need GITHUB_TOKEN variable"; fi
+	#
+	## Commit any changes found on local chart
+	#
 	if [[ $(shell git status --porcelain | wc -l) -gt 0 ]]; then \
-		# Commit only changes from local chart
-		git add charts/previews
-		git diff --name-only
-		git commit --allow-empty -m "e2e: $(shell git rev-parse --short HEAD)"
-		git push -u origin
+		if [[ -z "$(GITHUB_TOKEN)" ]]; then echo "Error: need GITHUB_TOKEN variable"; \
+		git add charts/previews; \
+		git diff; \
+		git commit -m "e2e: $(shell git rev-parse --short HEAD)"; \
+		git push -u origin; \
+		$(MAKE) sync; \
+		sync 1; \
 		HOST="$(DEMO_PR).127.0.0.1.nip.io" tests/e2e.sh; \
+		fi; \
 	fi
 
 # Example how to source remote chart via GH actions.
