@@ -56,17 +56,22 @@ HOST="$(DEMO_PR).127.0.0.1.nip.io"
 e2e: kind setup port_forward login deploy ## E2e local helm chart
 	echo ":: $@ :: "
 	if [[ -z "$(IMAGE_TAG)" ]]; then echo "Error: need IMAGE_TAG variable"; fi
-	if [[ -z "$(GITHUB_TOKEN)" ]]; then echo "Error: need GITHUB_TOKEN variable"; fi
-	helm upgrade --install --create-namespace --namespace=$(DEMO_PR) $(E2E_CHART) ./charts/$(E2E_CHART) --set "image.tag=$(IMAGE_TAG)"; \
+	helm upgrade --install \
+		--create-namespace \
+		--namespace=$(DEMO_PR) \
+		$(E2E_CHART) ./charts/$(E2E_CHART) \
+		--set "image.tag=$(IMAGE_TAG)"; \
 	kubectl wait --for=condition=Ready pods --all -n $(DEMO_PR) --timeout=300s; \
 	HOST="$(HOST)" tests/e2e.sh; \
+	helm -n $(DEMO_PR) get values $(E2E_CHART); \
+	helm -n $(DEMO_PR) delete $(E2E_CHART); \
 	\
 	REPO="atrakic/argocd-previews" \
 	CHART_PATH="charts/$(E2E_CHART)" \
 	HOST="$(HOST)" \
-	APP_ID="$(DEMO_PR)" scripts/create.sh; \
-	\
+	APP_ID="$(DEMO_PR)" scripts/create.sh;
 	## Commit any changes found on local chart
+	if [[ -z "$(GITHUB_TOKEN)" ]]; then echo "Error: need GITHUB_TOKEN variable"; fi
 	if [[ -n "$$(git status -s)" ]]; then \
 		echo "Updating chart"; \
 		git add charts/previews; \
