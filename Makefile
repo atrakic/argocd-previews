@@ -1,4 +1,4 @@
-MAKEFLAGS += --silent
+#MAKEFLAGS += --silent
 
 SHELL := /bin/bash
 
@@ -58,7 +58,7 @@ e2e:
 		git commit -m "e2e: $(shell git rev-parse --short HEAD)"; \
 		git push -u origin; \
 		$(MAKE) sync; \
-		sync 1; \
+		sleep 1; \
 		HOST="$(DEMO_PR).127.0.0.1.nip.io" tests/e2e.sh; \
 		kubectl wait --for=condition=Ready pods --all -n $(DEMO_PR) --timeout=300; \
 		kubectl get pod -n $(DEMO_PR) -l "app.kubernetes.io/name=demo" -o=custom-columns='DATA:spec.containers[*].image'; \
