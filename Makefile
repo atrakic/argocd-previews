@@ -61,6 +61,7 @@ e2e: kind setup port_forward login deploy ## E2e local helm chart
 		--namespace=$(DEMO_PR) \
 		$(E2E_CHART) ./charts/$(E2E_CHART) \
 		--set "image.tag=$(IMAGE_TAG)"; \
+		--set "image.pullPolicy=Always"; \
 	kubectl wait --for=condition=Ready pods --all -n $(DEMO_PR) --timeout=300s; \
 	HOST="$(HOST)" tests/e2e.sh; \
 	helm -n $(DEMO_PR) get values $(E2E_CHART); \
