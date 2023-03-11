@@ -7,8 +7,8 @@ SHELL := /bin/bash
 SERVER := 127.0.0.1:8080
 
 # Follows naming convention from ./argocd/project.yaml
-DEMO_PR ?= pr-0000-demo
-
+E2E_CHART ?= demo
+DEMO_PR ?= pr-0000-$(E2E_CHART)
 
 all: kind setup port_forward login deploy e2e status ## Do all
 
@@ -43,19 +43,24 @@ login: ## ArgoCD Login
 deploy: ## Deploy a local helm chart with ArgoCD Application previews
 	echo ":: $@ :: "
 	kubectl apply -f argocd
-	#helm upgrade --install previews ./charts/previews --set "foo.bar=True"
 	argocd --server $(SERVER) --insecure app sync $(DEMO_PR)
 
-## Commit any changes found on local chart
-HOST="$(DEMO_PR).$(shell curl -sSL ifconfig.co).nip.io"
+#HOST="$(DEMO_PR).$(shell curl -sSL ifconfig.co).nip.io"
+HOST="$(DEMO_PR).127.0.0.1.nip.io"
 e2e: kind setup port_forward login ## E2e local helm chart
 	echo ":: $@ :: "
 	if [[ -z "$(IMAGE_TAG)" ]]; then echo "Error: need IMAGE_TAG variable"; fi
 	if [[ -z "$(GITHUB_TOKEN)" ]]; then echo "Error: need GITHUB_TOKEN variable"; fi
+	helm upgrade --install --create-namespace --namespace=$(DEMO_PR) $(E2E_CHART) ./charts/$(E2E_CHART) --set "image.tag=$(IMAGE_TAG)"; \
+	kubectl wait --for=condition=Ready pods --all -n $(DEMO_PR) --timeout=300s; \
+	HOST="$(HOST)" tests/e2e.sh; \
+	\
 	REPO="atrakic/argocd-previews" \
-	CHART_PATH="charts/demo" \
-	HOST="$(DEMO_PR).127.0.0.1.nip.io" \
+	CHART_PATH="charts/$(E2E_CHART)" \
+	HOST="$(HOST)" \
 	APP_ID="$(DEMO_PR)" scripts/create.sh; \
+	\
+	## Commit any changes found on local chart
 	if [[ -n "$$(git status -s)" ]]; then \
 		echo "Updating chart"; \
 		git add charts/previews; \
@@ -63,10 +68,8 @@ e2e: kind setup port_forward login ## E2e local helm chart
 		git commit -m "e2e: $(shell git rev-parse --short HEAD)"; \
 		git push -u origin; \
 		$(MAKE) sync; \
-		kubectl wait --for=condition=Ready pods --all -n $(DEMO_PR) --timeout=300s; \
-		kubectl get pod -n $(DEMO_PR) -l "app.kubernetes.io/name=demo" -o=custom-columns='DATA:spec.containers[*].image'; \
+		kubectl get pod -n $(DEMO_PR) -l "app.kubernetes.io/name=$(E2E_CHART)" -o=custom-columns='DATA:spec.containers[*].image'; \
 	fi
-	HOST="$(DEMO_PR).127.0.0.1.nip.io" tests/e2e.sh
 
 # Example how to source remote chart via GH actions.
 e2e-remote-chart: ## E2e remote helm chart
@@ -84,7 +87,6 @@ sync: ## Sync previews
 	argocd --server $(SERVER) --insecure app wait previews
 
 clean: ## Clean
-	#helm uninstall previews
 	kind delete cluster
 
 help:
