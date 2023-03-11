@@ -78,7 +78,7 @@ sync: ## Sync previews
 	argocd --server $(SERVER) --insecure app wait previews
 
 clean: ## Clean
-	helm uninstall previews
+	#helm uninstall previews
 	kind delete cluster
 
 help:
