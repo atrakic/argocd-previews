@@ -74,8 +74,8 @@ e2e-remote-chart: kind setup port_forward deploy ## E2e remote helm chart
 	APP_ID="pr-e2e" tests/trigger_create_pr.sh
 
 sync: ## Sync previews
-	argocd app sync previews
-	argocd app wait previews
+	argocd --server $(SERVER) --insecure app sync previews
+	argocd --server $(SERVER) --insecure app wait previews
 
 clean: ## Clean
 	helm uninstall previews
