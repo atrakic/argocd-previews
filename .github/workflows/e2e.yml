@@ -11,6 +11,7 @@ on:
 
 jobs:
   kind-e2e:
+    name: e2e-${{ inputs.docker_tag }}
     runs-on: ubuntu-latest
     if: ${{ inputs.docker_tag }}
     #if: ${{ github.actor != 'dependabot[bot]' }}
