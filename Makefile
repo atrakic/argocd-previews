@@ -34,7 +34,7 @@ port_forward: ## ArgoCD Port forward
 	echo ":: $@ :: "
 	scripts/argocd/port_forward.sh &
 	sleep 1
-	curl -fiskL --retry 3 --max-time 3 $(SERVER)
+	curl -o /dev/null -fiskL --retry 3 --max-time 3 $(SERVER)
 
 login: ## ArgoCD Login
 	echo ":: $@ :: "
@@ -45,9 +45,14 @@ deploy: ## Deploy a local helm chart with ArgoCD Application previews
 	kubectl apply -f argocd
 	argocd --server $(SERVER) --insecure app sync $(DEMO_PR)
 
+sync: ## Sync previews
+	echo ":: $@ :: "
+	argocd --server $(SERVER) --insecure app sync previews
+	argocd --server $(SERVER) --insecure app wait previews
+
 #HOST="$(DEMO_PR).$(shell curl -sSL ifconfig.co).nip.io"
 HOST="$(DEMO_PR).127.0.0.1.nip.io"
-e2e: kind setup port_forward login ## E2e local helm chart
+e2e: kind setup port_forward login deploy ## E2e local helm chart
 	echo ":: $@ :: "
 	if [[ -z "$(IMAGE_TAG)" ]]; then echo "Error: need IMAGE_TAG variable"; fi
 	if [[ -z "$(GITHUB_TOKEN)" ]]; then echo "Error: need GITHUB_TOKEN variable"; fi
@@ -80,11 +85,6 @@ e2e-remote-chart: ## E2e remote helm chart
 	CHART_PATH="charts/go-static-site" \
 	HOST="go-static-site.127.0.0.1.nip.io" \
 	APP_ID="pr-e2e" tests/trigger_create_pr.sh
-
-sync: ## Sync previews
-	echo ":: $@ :: "
-	argocd --server $(SERVER) --insecure app sync previews
-	argocd --server $(SERVER) --insecure app wait previews
 
 clean: ## Clean
 	kind delete cluster
