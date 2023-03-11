@@ -10,11 +10,11 @@ DEMO_PR ?= pr-0000-demo
 all: kind setup port_forward login deploy e2e status ## Do all
 
 kind:
-	kind create cluster --config tests/kind.yaml --wait 60s || true
+	kind create cluster --config config/kind.yaml --wait 60s || true
 	kind version
 
 setup: ## Setup kinD with ArgoCD + Nginx Ingress
-	kubectl wait --for=condition=Ready pods --all --all-namespaces --timeout=300s
+	kubectl wait --for=condition=Ready pods --all -n kube-system --timeout=300s
 	kubectl cluster-info
 	scripts/argocd/up.sh
 	scripts/ingress/up.sh
@@ -37,7 +37,7 @@ deploy: ## Deploy a local helm chart with ArgoCD Application previews
 	#helm upgrade --install previews ./charts/previews --set "foo.bar=True"
 	argocd app sync $(DEMO_PR)
 
-e2e: ## E2e local helm chart
+e2e: kind setup port_forward deploy ## E2e local helm chart
 	echo ":: $@ :: "
 	REPO="atrakic/argocd-previews" \
 		IMAGE_TAG="stable-alpine" \
