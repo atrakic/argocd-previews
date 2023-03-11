@@ -9,7 +9,6 @@ SERVER ?= 127.0.0.1:8080
 # Follows naming convention from ./argocd/project.yaml
 DEMO_PR ?= pr-0000-demo
 
-HOST="$(DEMO_PR).$(shell curl -sSL ifconfig.co).nip.io"
 
 all: kind setup port_forward login deploy e2e status ## Do all
 
@@ -41,18 +40,17 @@ deploy: ## Deploy a local helm chart with ArgoCD Application previews
 	#helm upgrade --install previews ./charts/previews --set "foo.bar=True"
 	argocd app sync $(DEMO_PR)
 
-e2e: kind setup port_forward deploy ## E2e local helm chart
+HOST="$(DEMO_PR).$(shell curl -sSL ifconfig.co).nip.io"
+#e2e: kind setup port_forward deploy ## E2e local helm chart
+## Commit any changes found on local chart
+e2e:
 	echo ":: $@ :: "
 	if [[ -z "$(IMAGE_TAG)" ]]; then echo "Error: need IMAGE_TAG variable"; fi
 	REPO="atrakic/argocd-previews" \
 	CHART_PATH="charts/demo" \
 	HOST="$(DEMO_PR).127.0.0.1.nip.io" \
 	APP_ID="$(DEMO_PR)" scripts/create.sh; \
-	#
-	## Commit any changes found on local chart
-	#
-	if [[ $(shell git status --porcelain | wc -l) -gt 0 ]]; then \
-		if [[ -z "$(GITHUB_TOKEN)" ]]; then echo "Error: need GITHUB_TOKEN variable"; \
+	if [[ -n "$$(git status -s)" ]]; then \
 		echo "Updating chart"; \
 		git add charts/previews; \
 		git diff --name-only; \
@@ -61,8 +59,7 @@ e2e: kind setup port_forward deploy ## E2e local helm chart
 		$(MAKE) sync; \
 		sync 1; \
 		HOST="$(DEMO_PR).127.0.0.1.nip.io" tests/e2e.sh; \
-		kubectl describe pod -n $(DEMO_PR) -l "app.kubernetes.io/name=demo"; \
-		fi; \
+		kubectl get pod -n $(DEMO_PR) -l "app.kubernetes.io/name=demo" -o=custom-columns='DATA:spec.containers[*].image'; \
 	fi
 
 # Example how to source remote chart via GH actions.
