@@ -47,19 +47,21 @@ e2e: kind setup port_forward deploy ## E2e local helm chart
 	REPO="atrakic/argocd-previews" \
 	CHART_PATH="charts/demo" \
 	HOST="$(DEMO_PR).127.0.0.1.nip.io" \
-	APP_ID="$(DEMO_PR)" scripts/create.sh
+	APP_ID="$(DEMO_PR)" scripts/create.sh; \
 	#
 	## Commit any changes found on local chart
 	#
 	if [[ $(shell git status --porcelain | wc -l) -gt 0 ]]; then \
 		if [[ -z "$(GITHUB_TOKEN)" ]]; then echo "Error: need GITHUB_TOKEN variable"; \
+		echo "Updating chart"; \
 		git add charts/previews; \
-		git diff; \
+		git diff --name-only; \
 		git commit -m "e2e: $(shell git rev-parse --short HEAD)"; \
 		git push -u origin; \
 		$(MAKE) sync; \
 		sync 1; \
 		HOST="$(DEMO_PR).127.0.0.1.nip.io" tests/e2e.sh; \
+		kubectl describe pod -n $(DEMO_PR) -l "app.kubernetes.io/name=demo"; \
 		fi; \
 	fi
 
