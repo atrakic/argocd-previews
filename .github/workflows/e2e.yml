@@ -47,4 +47,4 @@ jobs:
           helm list -A
           kubectl get all,cm,sa -A
           kubectl get events --sort-by='.metadata.creationTimestamp' -A
-          kubectl logs --all-containers=true
+          kubectl -n argocd  logs  --selector app.kubernetes.io/name=argocd-application-controller
