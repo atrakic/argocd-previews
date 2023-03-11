@@ -34,6 +34,7 @@ port_forward: ## ArgoCD Port forward
 	echo ":: $@ :: "
 	scripts/argocd/port_forward.sh &
 	sleep 1
+	curl -fiskL --retry 3 --max-time 3 $(SERVER)
 
 login: ## ArgoCD Login
 	echo ":: $@ :: "
