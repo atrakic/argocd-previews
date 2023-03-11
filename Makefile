@@ -47,7 +47,7 @@ deploy: ## Deploy a local helm chart with ArgoCD Application previews
 
 ## Commit any changes found on local chart
 HOST="$(DEMO_PR).$(shell curl -sSL ifconfig.co).nip.io"
-e2e: kind setup port_forward login deploy status ## E2e local helm chart
+e2e: kind setup port_forward login ## E2e local helm chart
 	echo ":: $@ :: "
 	if [[ -z "$(IMAGE_TAG)" ]]; then echo "Error: need IMAGE_TAG variable"; fi
 	if [[ -z "$(GITHUB_TOKEN)" ]]; then echo "Error: need GITHUB_TOKEN variable"; fi
@@ -62,10 +62,9 @@ e2e: kind setup port_forward login deploy status ## E2e local helm chart
 		git commit -m "e2e: $(shell git rev-parse --short HEAD)"; \
 		git push -u origin; \
 		$(MAKE) sync; \
-		sleep 1; \
-		HOST="$(DEMO_PR).127.0.0.1.nip.io" tests/e2e.sh; \
 		kubectl wait --for=condition=Ready pods --all -n $(DEMO_PR) --timeout=300s; \
 		kubectl get pod -n $(DEMO_PR) -l "app.kubernetes.io/name=demo" -o=custom-columns='DATA:spec.containers[*].image'; \
+		HOST="$(DEMO_PR).127.0.0.1.nip.io" tests/e2e.sh; \
 	fi
 
 # Example how to source remote chart via GH actions.
