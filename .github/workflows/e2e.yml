@@ -31,6 +31,11 @@ jobs:
         with:
           install_only: true
 
+      - name: Configure git
+        run: |
+          git config --global user.name "e2e[bot]"
+          git config --global user.email "${GITHUB_ACTOR}@users.noreply.github.com"
+
       - name: Run e2e
         run: |
           IMAGE_TAG="${{ inputs.docker_tag }}" GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }} make e2e
