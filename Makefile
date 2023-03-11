@@ -82,7 +82,9 @@ e2e: kind setup port_forward login deploy ## E2e local helm chart
 		git push -u origin; \
 		$(MAKE) sync; \
 		kubectl get pod -n $(DEMO_PR) -l "app.kubernetes.io/name=$(E2E_CHART)" -o=custom-columns='DATA:spec.containers[*].image'; \
-	fi
+	fi; \
+	\
+	HOST="$(HOST)" tests/e2e.sh
 
 # Example how to source remote chart via GH actions.
 e2e-remote-chart: ## E2e remote helm chart
