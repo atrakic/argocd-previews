@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-#export HOST="${APP_ID}.$(curl -sSL ifconfig.co).nip.io"
+GITHUB_TOKEN="${GITHUB_TOKEN:?Error: GITHUB_TOKEN must be set}"
 
-PAYLOAD=$(cat <<-END
+JSON_PAYLOAD=$(cat <<-END
 {
   "ref": "$(git rev-parse --abbrev-ref HEAD)",
   "inputs":
@@ -17,7 +17,7 @@ PAYLOAD=$(cat <<-END
 END
 )
 
-curl -L -X POST -d "$PAYLOAD" \
+curl -L -X POST -d "$JSON_PAYLOAD" \
   -H "authorization: Bearer ${GITHUB_TOKEN}" \
   -H "Accept: application/vnd.github.v3+json" \
   -H "X-GitHub-Api-Version: 2022-11-28" \

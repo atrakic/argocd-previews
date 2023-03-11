@@ -1,11 +1,15 @@
 MAKEFLAGS += --silent
 
+SHELL := /bin/bash
+
 .DEFAULT_GOAL := help
 
 SERVER ?= 127.0.0.1:8080
 
 # Follows naming convention from ./argocd/project.yaml
 DEMO_PR ?= pr-0000-demo
+
+HOST="$(DEMO_PR).$(shell curl -sSL ifconfig.co).nip.io"
 
 all: kind setup port_forward login deploy e2e status ## Do all
 
@@ -39,29 +43,30 @@ deploy: ## Deploy a local helm chart with ArgoCD Application previews
 
 e2e: kind setup port_forward deploy ## E2e local helm chart
 	echo ":: $@ :: "
+	if [[ -z "$(IMAGE_TAG)" ]]; then echo "Error: need IMAGE_TAG variable"; fi
 	REPO="atrakic/argocd-previews" \
-		IMAGE_TAG="stable-alpine" \
-		CHART_PATH="charts/demo" \
-		HOST="$(DEMO_PR).127.0.0.1.nip.io" \
-		APP_ID="$(DEMO_PR)" scripts/create.sh
+	CHART_PATH="charts/demo" \
+	HOST="$(DEMO_PR).127.0.0.1.nip.io" \
+	APP_ID="$(DEMO_PR)" scripts/create.sh
+	if [[ -z "$(GITHUB_TOKEN)" ]]; then echo "Error: need GITHUB_TOKEN variable"; fi
+	if [[ $(shell git status --porcelain | wc -l) -gt 0 ]]; then \
 		# Commit only changes from local chart
 		git add charts/previews
 		git diff --name-only
 		git commit --allow-empty -m "e2e: $(shell git rev-parse --short HEAD)"
 		git push -u origin
-		HOST="$(DEMO_PR).127.0.0.1.nip.io" tests/e2e.sh
-
-e2e-remote-chart: ## E2e remote helm chart
-	echo ":: $@ :: "
-	# Example how to source remote chart via GH actions.
-	# Follows naming convention from: argocd/project.yaml
-	if [ -n "$(GITHUB_TOKEN)" ]; then \
-		REPO="atrakic/go-static-site" \
-		IMAGE_TAG="v0.0.2" \
-		CHART_PATH="charts/go-static-site" \
-		HOST="go-static-site.127.0.0.1.nip.io" \
-		APP_ID="pr-e2e" tests/trigger_create_pr.sh; \
+		HOST="$(DEMO_PR).127.0.0.1.nip.io" tests/e2e.sh; \
 	fi
+
+# Example how to source remote chart via GH actions.
+e2e-remote-chart: kind setup port_forward deploy ## E2e remote helm chart
+	echo ":: $@ :: "
+	if [[ -z "$(GITHUB_TOKEN)" ]]; then echo "Error: need GITHUB_TOKEN variable"; fi
+	REPO="atrakic/go-static-site" \
+	IMAGE_TAG="v0.0.2" \
+	CHART_PATH="charts/go-static-site" \
+	HOST="go-static-site.127.0.0.1.nip.io" \
+	APP_ID="pr-e2e" tests/trigger_create_pr.sh
 
 sync: ## Sync previews
 	argocd app sync previews
