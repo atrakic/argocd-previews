@@ -34,7 +34,7 @@ port_forward: ## ArgoCD Port forward
 	echo ":: $@ :: "
 	scripts/argocd/port_forward.sh &
 	sleep 1
-	curl -o /dev/null -fiskL --retry 3 --max-time 3 $(SERVER)
+	curl -o /dev/null -iskL --retry 3 --max-time 3 $(SERVER)
 
 login: ## ArgoCD Login
 	echo ":: $@ :: "
@@ -43,12 +43,13 @@ login: ## ArgoCD Login
 deploy: ## Deploy a local helm chart with ArgoCD Application previews
 	echo ":: $@ :: "
 	kubectl apply -f argocd
-	argocd --server $(SERVER) --insecure app sync $(DEMO_PR)
 
 sync: ## Sync previews
 	echo ":: $@ :: "
 	argocd --server $(SERVER) --insecure app sync previews
 	argocd --server $(SERVER) --insecure app wait previews
+	argocd --server $(SERVER) --insecure app sync $(DEMO_PR)
+	argocd --server $(SERVER) --insecure app wait $(DEMO_PR)
 
 #HOST="$(DEMO_PR).$(shell curl -sSL ifconfig.co).nip.io"
 HOST="$(DEMO_PR).127.0.0.1.nip.io"
