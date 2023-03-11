@@ -4,7 +4,7 @@ SHELL := /bin/bash
 
 .DEFAULT_GOAL := help
 
-SERVER ?= 127.0.0.1:8080
+SERVER := 127.0.0.1:8080
 
 # Follows naming convention from ./argocd/project.yaml
 DEMO_PR ?= pr-0000-demo
@@ -17,32 +17,37 @@ kind:
 	kind version
 
 setup: ## Setup kinD with ArgoCD + Nginx Ingress
+	echo ":: $@ :: "
 	kubectl wait --for=condition=Ready pods --all -n kube-system --timeout=300s
 	kubectl cluster-info
 	scripts/argocd/up.sh
 	scripts/ingress/up.sh
 
 status: ## Status
+	echo ":: $@ :: "
 	argocd version
 	argocd --server $(SERVER) --insecure app list
 	argocd --server $(SERVER) --insecure proj list
 	argocd --server $(SERVER) --insecure app manifests $(DEMO_PR)
 
 port_forward: ## ArgoCD Port forward
+	echo ":: $@ :: "
 	scripts/argocd/port_forward.sh &
 	sleep 1
 
 login: ## ArgoCD Login
+	echo ":: $@ :: "
 	scripts/argocd/login.sh
 
 deploy: ## Deploy a local helm chart with ArgoCD Application previews
+	echo ":: $@ :: "
 	kubectl apply -f argocd
 	#helm upgrade --install previews ./charts/previews --set "foo.bar=True"
 	argocd --server $(SERVER) --insecure app sync $(DEMO_PR)
 
 ## Commit any changes found on local chart
 HOST="$(DEMO_PR).$(shell curl -sSL ifconfig.co).nip.io"
-e2e: kind setup port_forward deploy status ## E2e local helm chart
+e2e: kind setup port_forward login deploy status ## E2e local helm chart
 	echo ":: $@ :: "
 	if [[ -z "$(IMAGE_TAG)" ]]; then echo "Error: need IMAGE_TAG variable"; fi
 	if [[ -z "$(GITHUB_TOKEN)" ]]; then echo "Error: need GITHUB_TOKEN variable"; fi
@@ -64,7 +69,7 @@ e2e: kind setup port_forward deploy status ## E2e local helm chart
 	fi
 
 # Example how to source remote chart via GH actions.
-e2e-remote-chart: kind setup port_forward deploy ## E2e remote helm chart
+e2e-remote-chart: kind setup port_forward login deploy status ## E2e remote helm chart
 	echo ":: $@ :: "
 	if [[ -z "$(GITHUB_TOKEN)" ]]; then echo "Error: need GITHUB_TOKEN variable"; fi
 	REPO="atrakic/go-static-site" \
@@ -74,6 +79,7 @@ e2e-remote-chart: kind setup port_forward deploy ## E2e remote helm chart
 	APP_ID="pr-e2e" tests/trigger_create_pr.sh
 
 sync: ## Sync previews
+	echo ":: $@ :: "
 	argocd --server $(SERVER) --insecure app sync previews
 	argocd --server $(SERVER) --insecure app wait previews
 
