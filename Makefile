@@ -40,10 +40,9 @@ deploy: ## Deploy a local helm chart with ArgoCD Application previews
 	#helm upgrade --install previews ./charts/previews --set "foo.bar=True"
 	argocd app sync $(DEMO_PR)
 
-HOST="$(DEMO_PR).$(shell curl -sSL ifconfig.co).nip.io"
-#e2e: kind setup port_forward deploy ## E2e local helm chart
 ## Commit any changes found on local chart
-e2e:
+HOST="$(DEMO_PR).$(shell curl -sSL ifconfig.co).nip.io"
+e2e: kind setup port_forward deploy ## E2e local helm chart
 	echo ":: $@ :: "
 	if [[ -z "$(IMAGE_TAG)" ]]; then echo "Error: need IMAGE_TAG variable"; fi
 	if [[ -z "$(GITHUB_TOKEN)" ]]; then echo "Error: need GITHUB_TOKEN variable"; fi
