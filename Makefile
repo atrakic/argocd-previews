@@ -69,9 +69,10 @@ e2e: kind setup port_forward login deploy ## E2e local helm chart
 	REPO="atrakic/argocd-previews" \
 	CHART_PATH="charts/$(E2E_CHART)" \
 	HOST="$(HOST)" \
-	APP_ID="$(DEMO_PR)" scripts/create.sh;
-	## Commit any changes found on local chart
-	if [[ -z "$(GITHUB_TOKEN)" ]]; then echo "Error: need GITHUB_TOKEN variable"; fi
+	APP_ID="$(DEMO_PR)" scripts/create.sh; \
+	\
+	if [[ -z "$(GITHUB_TOKEN)" ]]; then echo "Error: need GITHUB_TOKEN variable"; fi; \
+	\
 	if [[ -n "$$(git status -s)" ]]; then \
 		echo "Updating chart"; \
 		git add charts/previews; \
