@@ -46,6 +46,7 @@ HOST="$(DEMO_PR).$(shell curl -sSL ifconfig.co).nip.io"
 e2e:
 	echo ":: $@ :: "
 	if [[ -z "$(IMAGE_TAG)" ]]; then echo "Error: need IMAGE_TAG variable"; fi
+	if [[ -z "$(GITHUB_TOKEN)" ]]; then echo "Error: need GITHUB_TOKEN variable"; fi
 	REPO="atrakic/argocd-previews" \
 	CHART_PATH="charts/demo" \
 	HOST="$(DEMO_PR).127.0.0.1.nip.io" \
