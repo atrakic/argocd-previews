@@ -64,11 +64,11 @@ e2e: kind setup port_forward login ## E2e local helm chart
 		$(MAKE) sync; \
 		kubectl wait --for=condition=Ready pods --all -n $(DEMO_PR) --timeout=300s; \
 		kubectl get pod -n $(DEMO_PR) -l "app.kubernetes.io/name=demo" -o=custom-columns='DATA:spec.containers[*].image'; \
-		HOST="$(DEMO_PR).127.0.0.1.nip.io" tests/e2e.sh; \
 	fi
+	HOST="$(DEMO_PR).127.0.0.1.nip.io" tests/e2e.sh
 
 # Example how to source remote chart via GH actions.
-e2e-remote-chart: kind setup port_forward login deploy status ## E2e remote helm chart
+e2e-remote-chart: ## E2e remote helm chart
 	echo ":: $@ :: "
 	if [[ -z "$(GITHUB_TOKEN)" ]]; then echo "Error: need GITHUB_TOKEN variable"; fi
 	REPO="atrakic/go-static-site" \
