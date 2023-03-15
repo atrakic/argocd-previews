@@ -1,4 +1,4 @@
-#MAKEFLAGS += --silent
+MAKEFLAGS += --silent
 
 SHELL := /bin/bash
 
@@ -13,7 +13,7 @@ DEMO_PR ?= pr-0000-$(E2E_CHART)
 all: kind setup port_forward login deploy e2e status ## Do all
 
 kind:
-	kind create cluster --config config/kind.yaml --wait 60s || true
+	scripts/kind/up.sh || true
 	kind version
 
 setup: ## Setup kinD with ArgoCD + Nginx Ingress
@@ -97,7 +97,10 @@ e2e-remote-chart: ## E2e remote helm chart
 	APP_ID="pr-e2e" tests/trigger_create_pr.sh
 
 clean: ## Clean
-	kind delete cluster
+	echo "You are about to delete cluster."
+	echo "Are you sure? (Press Enter to continue or Ctrl+C to abort) "
+	read _
+	scripts/kind/down.sh
 
 help:
 	awk 'BEGIN {FS = ":.*##"; printf "\nUsage:\n  make \033[36m<target>\033[0m\n"} /^[a-zA-Z_0-9-]+:.*?##/ { printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2 } /^##@/ { printf "\n\033[1m%s\033[0m\n", substr($$0, 5) } ' $(MAKEFILE_LIST)
