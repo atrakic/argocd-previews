@@ -18,7 +18,7 @@ spec:
     helm:
       values: |
         image:
-          tag: "1.23.0"
+          tag: "latest"
         ingress:
           enabled: true
           hosts:
